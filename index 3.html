@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Block 1">
+<title>Block 1</title>
+<style>
+:root {
+  --bg: #0e0e10; --surface: #18181b; --surface2: #222226; --border: #2e2e33;
+  --accent: #c8f135; --text: #f4f4f5; --muted: #71717a; --green: #4ade80; --yellow: #fbbf24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; min-height: 100vh; overflow-x: hidden; }
+.top-bar { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.week-badge { font-family: 'Courier New', monospace; font-size: 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--muted); cursor: pointer; }
+.week-badge span { color: var(--text); }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; margin-left: 6px; transition: background 0.3s; }
+.sync-dot.saving { background: var(--yellow); }
+.sync-dot.saved { background: var(--green); }
+.day-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 56px; z-index: 99; }
+.day-tab { padding: 14px 8px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.day-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.day-tab .sub { font-size: 10px; font-weight: 400; display: block; margin-top: 2px; opacity: 0.7; }
+.day-tab.active .sub { opacity: 1; }
+.main { padding: 0 0 120px; }
+.warmup { margin: 16px 16px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
+.warmup .icon { font-size: 18px; flex-shrink: 0; }
+.warmup .text { font-size: 12px; line-height: 1.6; color: var(--muted); }
+.warmup .text strong { color: var(--green); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.progress-row { margin: 12px 16px 0; display: flex; align-items: center; gap: 10px; }
+.prog-bg { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+.prog-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.section-label { padding: 20px 16px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.section-label.core { color: var(--green); }
+.ex-card { margin: 0 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.ex-header { padding: 14px 14px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.ex-name { font-size: 15px; font-weight: 700; line-height: 1.3; flex: 1; }
+.ex-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.badge { font-family: 'Courier New', monospace; font-size: 10px; padding: 3px 8px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.badge.sets { color: var(--accent); border-color: var(--accent); background: rgba(200,241,53,0.07); }
+.ex-cue { padding: 0 14px 12px; font-size: 11px; color: var(--muted); line-height: 1.5; font-style: italic; }
+.sets-wrap { border-top: 1px solid var(--border); }
+.set-row { display: grid; grid-template-columns: 36px 1fr 1fr 44px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); gap: 8px; transition: background 0.1s; }
+.set-row:last-child { border-bottom: none; }
+.set-row.done { background: rgba(200,241,53,0.04); }
+.set-num { font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); text-align: center; }
+.input-wrap { display: flex; flex-direction: column; gap: 2px; }
+.input-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.set-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Courier New', monospace; font-size: 16px; font-weight: 500; padding: 8px 10px; width: 100%; text-align: center; -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
+.set-input:focus { outline: none; border-color: var(--accent); background: rgba(200,241,53,0.05); }
+.set-input::placeholder { color: var(--border); }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type=number] { -moz-appearance: textfield; }
+.check-btn { width: 36px; height: 36px; border-radius: 10px; border: 2px solid var(--border); background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; font-size: 16px; }
+.check-btn.on { background: var(--accent); border-color: var(--accent); }
+.check-btn.on::after { content: '✓'; color: #000; font-weight: 900; font-size: 15px; }
+.energy-card { margin: 0 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.energy-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); margin-bottom: 12px; }
+.energy-dots { display: flex; gap: 10px; }
+.e-dot { flex: 1; height: 44px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 16px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+.e-dot.on { border-color: var(--yellow); background: rgba(251,191,36,0.12); color: var(--yellow); }
+.notes-card { margin: 0 16px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+.notes-lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.notes-ta { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: -apple-system, sans-serif; font-size: 14px; padding: 12px; resize: none; min-height: 80px; line-height: 1.5; }
+.notes-ta:focus { outline: none; border-color: var(--accent); }
+.notes-ta::placeholder { color: var(--border); }
+.save-btn { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-family: -apple-system, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; border: none; border-radius: 14px; padding: 16px 48px; cursor: pointer; box-shadow: 0 8px 32px rgba(200,241,53,0.25); transition: all 0.15s; white-space: nowrap; z-index: 200; }
+.save-btn:active { transform: translateX(-50%) scale(0.97); }
+.save-btn.saved { background: var(--green); box-shadow: 0 8px 32px rgba(74,222,128,0.25); }
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; align-items: flex-end; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: var(--surface); border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none; padding: 24px 20px 48px; width: 100%; max-width: 480px; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.wk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.wk-btn { padding: 16px 8px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface2); color: var(--text); font-family: -apple-system, sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
+.wk-btn.on { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.07); }
+.wk-btn.deload { border-color: var(--yellow); color: var(--yellow); }
+.wk-btn small { font-size: 10px; font-weight: 400; display: block; color: var(--muted); margin-top: 2px; }
+.modal-close { display: block; width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: -apple-system, sans-serif; font-size: 14px; cursor: pointer; }
+.loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div class="logo">Block 1</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="sync-dot" id="sync-dot"></span>
+    <div class="week-badge" onclick="openWeeks()">Week <span id="wk-num">1</span> of 6</div>
+  </div>
+</div>
+<div class="day-tabs">
+  <div class="day-tab active" onclick="goDay(0)">Day A<span class="sub">Push+Hinge</span></div>
+  <div class="day-tab" onclick="goDay(1)">Day B<span class="sub">Pull+Squat</span></div>
+  <div class="day-tab" onclick="goDay(2)">Day C<span class="sub">Full Body</span></div>
+</div>
+<div class="main" id="main"><div class="loading">Loading…</div></div>
+<div class="modal-bg" id="wk-modal">
+  <div class="modal">
+    <div class="modal-title">Select Week</div>
+    <div class="wk-grid" id="wk-grid"></div>
+    <button class="modal-close" onclick="closeWeeks()">Cancel</button>
+  </div>
+</div>
+<button class="save-btn" id="save-btn" onclick="doSave()">Save Workout</button>
+<script>
+var DAYS = [
+  { id:'a', warmup:"World's greatest stretch x5/side · Cat-cow x10 · Shoulder circles",
+    ex:[
+      {n:'Barbell RDL',s:3,r:'8-10',c:'Hinge at hips, soft knee, feel hamstrings load'},
+      {n:'Barbell Back Squat',s:3,r:'8-10',c:'Depth to parallel or below, chest tall'},
+      {n:'DB Overhead Press (single arm)',s:3,r:'10/side',c:'Standing — core braces hard'},
+      {n:'DB Bent-Over Row (single arm)',s:3,r:'10/side',c:'Hinge position, squeeze at top'},
+      {n:'DB Lateral Raise',s:2,r:'12-15',c:'Slow and controlled — no swinging'}
+    ],
+    core:[
+      {n:'Dead Bug',s:3,r:'10/side',c:'Lower back stays flat on floor'},
+      {n:'Pallof Press (band or DB)',s:3,r:'10/side',c:'Brace and resist rotation'},
+      {n:'Hollow Body Hold',s:3,r:'20-30 sec',c:'Lower back pressed to floor'},
+      {n:'DB Glute Bridge',s:3,r:'15',c:'Pause 1 sec at top'}
+    ]
+  },
+  { id:'b', warmup:"Hip circles · Banded clamshells x15/side · Leg swings",
+    ex:[
+      {n:'Barbell Front Squat / Goblet Squat',s:3,r:'8-10',c:'Goblet with DB if front squat uncomfortable'},
+      {n:'Barbell Bent-Over Row',s:3,r:'10-12',c:'Bar stays in rack between sets'},
+      {n:'Single-Leg DB RDL',s:3,r:'8/side',c:'Balance + posterior chain, soft landing'},
+      {n:'DB Curl',s:2,r:'12',c:"Full range, don't swing"},
+      {n:'DB Arnold Press',s:2,r:'10',c:'Seated on floor or standing'}
+    ],
+    core:[
+      {n:'Bird Dog',s:3,r:'10/side',c:'Extend opposite arm+leg, hold 2 sec'},
+      {n:'Side Plank with Hip Dip',s:3,r:'10/side',c:"Controlled dip, don't collapse"},
+      {n:'DB Glute Bridge March',s:3,r:'12/side',c:'Hold bridge, alternate leg lifts'}
+    ]
+  },
+  { id:'c', warmup:"Lateral band walks x15/side · Arm circles · 90/90 hip stretch",
+    ex:[
+      {n:'Barbell Lunge',s:3,r:'6-8',c:'Knee tracks over toe, controlled descent'},
+      {n:'Barbell Overhead Press',s:3,r:'8-10',c:"Both arms, brace core, don't arch"},
+      {n:'DB Split Squat (rear foot elevated)',s:3,r:'8/side',c:'3 sec eccentric down'},
+      {n:'DB Farmer Carry',s:3,r:'30-40m',c:'Heavy, walk tall, brace hard'},
+      {n:'DB Renegade Row',s:3,r:'8/side',c:'Keep hips level — push + pull + core'}
+    ],
+    core:[
+      {n:'Bear Crawl',s:3,r:'20m',c:'Slow, hips level, breathe'},
+      {n:'Stir the Pot (plank on ball)',s:3,r:'30 sec',c:'Small circles, brace through'},
+      {n:'DB Glute Bridge (weighted)',s:3,r:'15',c:'Pause at top, controlled descent'}
+    ]
+  }
+];
+
+var curDay=0, curWeek=1, cache={};
+
+function syncDot(state){
+  var d=document.getElementById('sync-dot');
+  if(!d) return;
+  d.className='sync-dot'+(state?' '+state:'');
+}
+
+async function apiGet(week, day){
+  try {
+    var r=await fetch('/data?week='+week+'&day='+day);
+    var data=await r.json();
+    // populate cache
+    data.entries.forEach(function(e){
+      cache[eKey(e.week,e.day,e.ex_idx,e.set_idx,e.field)]=e.value;
+      cache[eKey(e.week,e.day,e.ex_idx,e.set_idx,'done')]=cache[eKey(e.week,e.day,e.ex_idx,e.set_idx,'done')]||'';
+    });
+    data.entries.forEach(function(e){
+      if(e.field==='done') cache[eKey(e.week,e.day,e.ex_idx,e.set_idx,'done')]=e.value;
+    });
+    data.sessions.forEach(function(s){
+      cache[sKey(s.week,s.day,s.field)]=s.value;
+    });
+  } catch(err){ console.log('offline, using cache'); }
+}
+
+var saveQueue=[];
+var saving=false;
+async function apiPost(payload){
+  saveQueue.push(payload);
+  if(saving) return;
+  saving=true;
+  syncDot('saving');
+  while(saveQueue.length>0){
+    var item=saveQueue.shift();
+    try { await fetch('/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(item)}); }
+    catch(e){ console.log('save failed, cached locally'); }
+  }
+  saving=false;
+  syncDot('saved');
+  setTimeout(function(){ syncDot(''); },2000);
+}
+
+function eKey(w,d,e,s,f){ return 'e_'+w+'_'+d+'_'+e+'_'+s+'_'+f; }
+function sKey(w,d,f){ return 's_'+w+'_'+d+'_'+f; }
+function gv(k){ return cache[k]||''; }
+function sv(k,v){ cache[k]=v; }
+
+function totalSets(day){ return day.ex.concat(day.core).reduce(function(a,e){ return a+e.s; },0); }
+function countDone(day){
+  var n=0;
+  day.ex.forEach(function(e,i){ for(var s=0;s<e.s;s++){ if(gv(eKey(curWeek,day.id,i,s,'done'))==='1') n++; } });
+  day.core.forEach(function(e,i){ for(var s=0;s<e.s;s++){ if(gv(eKey(curWeek,day.id,i+100,s,'done'))==='1') n++; } });
+  return n;
+}
+function updateProgress(){
+  var day=DAYS[curDay],done=countDone(day),total=totalSets(day);
+  var fill=document.getElementById('prog-fill'),lbl=document.getElementById('prog-lbl');
+  if(fill) fill.style.width=(total>0?(done/total*100):0)+'%';
+  if(lbl) lbl.textContent=done+' / '+total+' sets';
+}
+
+function makeExCard(ex,eIdx,dayId){
+  var rows='';
+  for(var s=0;s<ex.s;s++){
+    var lv=gv(eKey(curWeek,dayId,eIdx,s,'lbs'));
+    var rv=gv(eKey(curWeek,dayId,eIdx,s,'reps'));
+    var done=gv(eKey(curWeek,dayId,eIdx,s,'done'))==='1';
+    rows+='<div class="set-row'+(done?' done':'')+'" id="sr-'+dayId+'-'+eIdx+'-'+s+'">'
+      +'<div class="set-num">'+(s+1)+'</div>'
+      +'<div class="input-wrap"><div class="input-lbl">lbs</div>'
+      +'<input type="number" inputmode="decimal" class="set-input" placeholder="-" value="'+lv+'" onchange="sf(\''+dayId+'\','+eIdx+','+s+',\'lbs\',this.value)"></div>'
+      +'<div class="input-wrap"><div class="input-lbl">reps</div>'
+      +'<input type="number" inputmode="decimal" class="set-input" placeholder="-" value="'+rv+'" onchange="sf(\''+dayId+'\','+eIdx+','+s+',\'reps\',this.value)"></div>'
+      +'<div class="check-btn'+(done?' on':'')+'" id="cb-'+dayId+'-'+eIdx+'-'+s+'" onclick="tc(\''+dayId+'\','+eIdx+','+s+')"></div>'
+      +'</div>';
+  }
+  return '<div class="ex-card">'
+    +'<div class="ex-header"><div class="ex-name">'+ex.n+'</div>'
+    +'<div class="ex-badges"><div class="badge sets">'+ex.s+'x</div><div class="badge">'+ex.r+'</div></div></div>'
+    +'<div class="ex-cue">'+ex.c+'</div>'
+    +'<div class="sets-wrap">'+rows+'</div></div>';
+}
+
+async function render(){
+  document.getElementById('main').innerHTML='<div class="loading">Loading…</div>';
+  var day=DAYS[curDay];
+  await apiGet(curWeek, day.id);
+  var html='<div class="warmup"><div class="icon">🔥</div><div class="text"><strong>Warm-up · 5 min</strong>'+day.warmup+'</div></div>';
+  html+='<div class="progress-row"><div class="prog-bg"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="prog-label" id="prog-lbl">0 / '+totalSets(day)+' sets</div></div>';
+  html+='<div class="section-label">Main Lifts</div>';
+  day.ex.forEach(function(e,i){ html+=makeExCard(e,i,day.id); });
+  html+='<div class="section-label core">⬡ Core Finisher</div>';
+  day.core.forEach(function(e,i){ html+=makeExCard(e,i+100,day.id); });
+  html+='<div class="section-label">Session</div>';
+  html+='<div class="energy-card"><div class="energy-lbl">Energy Level</div><div class="energy-dots">';
+  for(var n=1;n<=5;n++) html+='<div class="e-dot" id="ed-'+n+'" onclick="setE('+n+')">'+n+'</div>';
+  html+='</div></div>';
+  html+='<div class="notes-card"><div class="notes-lbl">Session Notes</div><textarea class="notes-ta" id="notes-ta" placeholder="PRs, how you felt, form notes…"></textarea></div>';
+  document.getElementById('main').innerHTML=html;
+  var se=gv(sKey(curWeek,day.id,'energy'));
+  if(se) setEUI(parseInt(se));
+  var nt=document.getElementById('notes-ta');
+  if(nt){ nt.value=gv(sKey(curWeek,day.id,'notes')); nt.addEventListener('input',function(){ sv(sKey(curWeek,day.id,'notes'),nt.value); apiPost({type:'session',week:curWeek,day:day.id,field:'notes',value:nt.value}); }); }
+  updateProgress();
+}
+
+function sf(d,e,s,f,v){
+  sv(eKey(curWeek,d,e,s,f),v);
+  apiPost({type:'entry',week:curWeek,day:d,ex_idx:e,set_idx:s,field:f,value:v});
+  updateProgress();
+}
+function tc(d,e,s){
+  var k=eKey(curWeek,d,e,s,'done'), was=gv(k)==='1', val=was?'0':'1';
+  sv(k,val);
+  apiPost({type:'entry',week:curWeek,day:d,ex_idx:e,set_idx:s,field:'done',value:val});
+  var cb=document.getElementById('cb-'+d+'-'+e+'-'+s);
+  var sr=document.getElementById('sr-'+d+'-'+e+'-'+s);
+  if(!was){ cb.classList.add('on'); sr.classList.add('done'); }
+  else { cb.classList.remove('on'); sr.classList.remove('done'); }
+  updateProgress();
+}
+function setE(n){ sv(sKey(curWeek,DAYS[curDay].id,'energy'),n); apiPost({type:'session',week:curWeek,day:DAYS[curDay].id,field:'energy',value:n}); setEUI(n); }
+function setEUI(n){ for(var i=1;i<=5;i++){ var el=document.getElementById('ed-'+i); if(el) el.classList.toggle('on',i===n); } }
+function goDay(i){ curDay=i; document.querySelectorAll('.day-tab').forEach(function(t,j){ t.classList.toggle('active',j===i); }); render(); window.scrollTo(0,0); }
+function openWeeks(){
+  var g=document.getElementById('wk-grid');
+  g.innerHTML=[1,2,3,4,5,6].map(function(w){
+    return '<button class="wk-btn'+(w===curWeek?' on':'')+(w===5?' deload':'')+'" onclick="pickWeek('+w+')">'
+      +'Week '+w+(w===5?'<small>Deload</small>':'')+'</button>';
+  }).join('');
+  document.getElementById('wk-modal').classList.add('open');
+}
+function closeWeeks(){ document.getElementById('wk-modal').classList.remove('open'); }
+function pickWeek(w){ curWeek=w; document.getElementById('wk-num').textContent=w; closeWeeks(); render(); }
+function doSave(){
+  var btn=document.getElementById('save-btn');
+  btn.textContent='✓ Saved'; btn.classList.add('saved');
+  setTimeout(function(){ btn.textContent='Save Workout'; btn.classList.remove('saved'); },2000);
+}
+window.onload=function(){ render(); };
+</script>
+</body>
+</html>
